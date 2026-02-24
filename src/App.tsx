@@ -4,62 +4,92 @@ import {
   PieChart, Pie, Cell, CartesianGrid, ReferenceLine
 } from "recharts";
 
+/* ─────────────── Types ─────────────── */
+type Lang = "ko" | "en";
+type CurKey = "EUR" | "KRW";
+type ThemeKey = "light" | "dark";
+type AccentKey = "cash" | "savings" | "stocks" | "goal" | "green" | "pink" | "purple";
+
+interface Encouragement {
+  threshold: number;
+  emoji: string;
+  msg: string;
+}
+
+interface Translation {
+  title: string; subtitle: string; currentAssets: string;
+  cash: string; savings: string; stocks: string;
+  monthlySettings: string; monthlySaving: string; monthlyInvest: string;
+  rates: string; savingsRate: string; stockRate: string;
+  goal: string; goalLabel: string; customGoal: string;
+  growthChart: string; assetComposition: string; milestone: string;
+  stats: { timeLeft: string; targetYear: string; monthlyTotal: string; vGoal: string };
+  months: string; years: string; monthsAfter: string;
+  achieved: string; approx: string; after: string; over600: string;
+  currentAsset: string; remaining: string; goalDone: string; expectedDate: string;
+  cashLabel: string; savingsLabel: string; stocksLabel: string;
+  savingsPlus: string; investPlus: string; footer: string; now: string;
+  darkMode: string; scenarioCompare: string; scenarioDesc: string;
+  aggressive: string; conservative: string;
+  aggressiveDesc: string; conservativeDesc: string;
+  diffLabel: string; monthsUnit: string;
+  fireCalc: string; fireDesc: string; monthlyExpense: string;
+  fireTarget: string; fireYears: string; fireAge: string; currentAge: string;
+  encouragements: Encouragement[];
+}
+
+interface ThemeColors {
+  bg: string; card: string; text: string; subtext: string;
+  muted: string; border: string; trackBg: string;
+  cardShadow: string; cardHoverShadow: string; tooltipBg: string;
+}
+
+interface CurrencyConfig {
+  symbol: string; locale: string; code: string;
+  presets: number[]; maxGoal: number; maxMonthly: number;
+  maxInvest: number; stepGoal: number;
+}
+
+interface SimInput {
+  cash: number; savings: number; stocks: number;
+  monthlySaving: number; monthlyInvest: number;
+  savingsRate: number; stockRate: number; target: number;
+}
+
+interface HistoryPoint {
+  month: number; total: number; cash: number; savings: number; stocks: number;
+}
+
+interface SimResult {
+  months: number; history: HistoryPoint[];
+}
+
 /* ─────────────── i18n ─────────────── */
-const i18n = {
+const i18n: Record<Lang, Translation> = {
   ko: {
-    title: "Money Geben",
-    subtitle: "돈 모으는 재미, 여기서 시작 🚀",
-    currentAssets: "🏦 현재 자산",
-    cash: "현금 (통장 잔고)",
-    savings: "저축 (적금/예금)",
-    stocks: "투자 (ETF/주식)",
-    monthlySettings: "📆 월간 설정",
-    monthlySaving: "월 저축액",
-    monthlyInvest: "월 투자액",
-    rates: "📊 수익률",
-    savingsRate: "저축 이자율 (연)",
-    stockRate: "투자 기대 수익률 (연)",
-    goal: "🎯 목표 금액",
-    goalLabel: "목표",
-    customGoal: "직접 입력",
-    growthChart: "📈 자산 성장 그래프",
-    assetComposition: "🧩 현재 자산 구성",
+    title: "Money Geben", subtitle: "돈 모으는 재미, 여기서 시작 🚀",
+    currentAssets: "🏦 현재 자산", cash: "현금 (통장 잔고)",
+    savings: "저축 (적금/예금)", stocks: "투자 (ETF/주식)",
+    monthlySettings: "📆 월간 설정", monthlySaving: "월 저축액", monthlyInvest: "월 투자액",
+    rates: "📊 수익률", savingsRate: "저축 이자율 (연)", stockRate: "투자 기대 수익률 (연)",
+    goal: "🎯 목표 금액", goalLabel: "목표", customGoal: "직접 입력",
+    growthChart: "📈 자산 성장 그래프", assetComposition: "🧩 현재 자산 구성",
     milestone: "🗓 마일스톤 타임라인",
     stats: { timeLeft: "달성까지", targetYear: "예상 연도", monthlyTotal: "월 총 투입", vGoal: "목표 대비" },
-    months: "개월",
-    years: "년",
-    monthsAfter: "개월 후",
-    achieved: "달성 완료!",
-    approx: "약",
-    after: "후",
-    over600: "600개월+",
-    currentAsset: "현재 자산",
-    remaining: "목표까지",
-    goalDone: "달성! 🎉",
-    expectedDate: "예상 달성일",
-    cashLabel: "현금",
-    savingsLabel: "저축",
-    stocksLabel: "투자",
-    savingsPlus: "저축",
-    investPlus: "투자",
-    footer: "Made with 💜 for money lovers · Money Geben",
-    now: "Now",
-    darkMode: "다크모드",
-    scenarioCompare: "🔀 시나리오 비교",
+    months: "개월", years: "년", monthsAfter: "개월 후",
+    achieved: "달성 완료!", approx: "약", after: "후", over600: "600개월+",
+    currentAsset: "현재 자산", remaining: "목표까지", goalDone: "달성! 🎉",
+    expectedDate: "예상 달성일", cashLabel: "현금", savingsLabel: "저축", stocksLabel: "투자",
+    savingsPlus: "저축", investPlus: "투자",
+    footer: "Made with 💜 for money lovers · Money Geben", now: "Now",
+    darkMode: "다크모드", scenarioCompare: "🔀 시나리오 비교",
     scenarioDesc: "공격적 투자 vs 안정적 저축 비교",
-    aggressive: "🔥 공격적",
-    conservative: "🛡 안정적",
-    aggressiveDesc: "투자 비중 ↑",
-    conservativeDesc: "저축 비중 ↑",
-    diffLabel: "차이",
-    monthsUnit: "개월",
-    fireCalc: "🔥 FIRE 계산기",
-    fireDesc: "경제적 자유까지 얼마나?",
-    monthlyExpense: "월 지출액",
-    fireTarget: "FIRE 목표",
-    fireYears: "FIRE까지",
-    fireAge: "달성 나이",
-    currentAge: "현재 나이",
+    aggressive: "🔥 공격적", conservative: "🛡 안정적",
+    aggressiveDesc: "투자 비중 ↑", conservativeDesc: "저축 비중 ↑",
+    diffLabel: "차이", monthsUnit: "개월",
+    fireCalc: "🔥 FIRE 계산기", fireDesc: "경제적 자유까지 얼마나?",
+    monthlyExpense: "월 지출액", fireTarget: "FIRE 목표",
+    fireYears: "FIRE까지", fireAge: "달성 나이", currentAge: "현재 나이",
     encouragements: [
       { threshold: 0, emoji: "🌱", msg: "씨앗을 심었어! 시작이 반이야!" },
       { threshold: 10, emoji: "🌿", msg: "슬슬 자라나고 있어~ 계속 가자!" },
@@ -73,59 +103,29 @@ const i18n = {
     ],
   },
   en: {
-    title: "Money Geben",
-    subtitle: "Start your saving journey here 🚀",
-    currentAssets: "🏦 Current Assets",
-    cash: "Cash (Checking)",
-    savings: "Savings (Deposits)",
-    stocks: "Investments (ETF/Stocks)",
-    monthlySettings: "📆 Monthly Settings",
-    monthlySaving: "Monthly Savings",
-    monthlyInvest: "Monthly Investment",
-    rates: "📊 Returns",
-    savingsRate: "Savings Interest (Annual)",
-    stockRate: "Expected Investment Return (Annual)",
-    goal: "🎯 Goal Amount",
-    goalLabel: "Goal",
-    customGoal: "Custom",
-    growthChart: "📈 Asset Growth Chart",
-    assetComposition: "🧩 Current Composition",
+    title: "Money Geben", subtitle: "Start your saving journey here 🚀",
+    currentAssets: "🏦 Current Assets", cash: "Cash (Checking)",
+    savings: "Savings (Deposits)", stocks: "Investments (ETF/Stocks)",
+    monthlySettings: "📆 Monthly Settings", monthlySaving: "Monthly Savings", monthlyInvest: "Monthly Investment",
+    rates: "📊 Returns", savingsRate: "Savings Interest (Annual)", stockRate: "Expected Investment Return (Annual)",
+    goal: "🎯 Goal Amount", goalLabel: "Goal", customGoal: "Custom",
+    growthChart: "📈 Asset Growth Chart", assetComposition: "🧩 Current Composition",
     milestone: "🗓 Milestone Timeline",
     stats: { timeLeft: "Time Left", targetYear: "Target Year", monthlyTotal: "Monthly Input", vGoal: "vs Goal" },
-    months: " months",
-    years: " yrs",
-    monthsAfter: " months later",
-    achieved: "Achieved!",
-    approx: "~",
-    after: "later",
-    over600: "600+ months",
-    currentAsset: "Current",
-    remaining: "Remaining",
-    goalDone: "Done! 🎉",
-    expectedDate: "Expected Date",
-    cashLabel: "Cash",
-    savingsLabel: "Savings",
-    stocksLabel: "Investments",
-    savingsPlus: "Sav",
-    investPlus: "Inv",
-    footer: "Made with 💜 for money lovers · Money Geben",
-    now: "Now",
-    darkMode: "Dark Mode",
-    scenarioCompare: "🔀 Scenario Compare",
+    months: " months", years: " yrs", monthsAfter: " months later",
+    achieved: "Achieved!", approx: "~", after: "later", over600: "600+ months",
+    currentAsset: "Current", remaining: "Remaining", goalDone: "Done! 🎉",
+    expectedDate: "Expected Date", cashLabel: "Cash", savingsLabel: "Savings", stocksLabel: "Investments",
+    savingsPlus: "Sav", investPlus: "Inv",
+    footer: "Made with 💜 for money lovers · Money Geben", now: "Now",
+    darkMode: "Dark Mode", scenarioCompare: "🔀 Scenario Compare",
     scenarioDesc: "Aggressive invest vs Safe savings",
-    aggressive: "🔥 Aggressive",
-    conservative: "🛡 Conservative",
-    aggressiveDesc: "More investing",
-    conservativeDesc: "More saving",
-    diffLabel: "Diff",
-    monthsUnit: "mo",
-    fireCalc: "🔥 FIRE Calculator",
-    fireDesc: "How long until financial freedom?",
-    monthlyExpense: "Monthly Expense",
-    fireTarget: "FIRE Target",
-    fireYears: "Years to FIRE",
-    fireAge: "FIRE Age",
-    currentAge: "Current Age",
+    aggressive: "🔥 Aggressive", conservative: "🛡 Conservative",
+    aggressiveDesc: "More investing", conservativeDesc: "More saving",
+    diffLabel: "Diff", monthsUnit: "mo",
+    fireCalc: "🔥 FIRE Calculator", fireDesc: "How long until financial freedom?",
+    monthlyExpense: "Monthly Expense", fireTarget: "FIRE Target",
+    fireYears: "Years to FIRE", fireAge: "FIRE Age", currentAge: "Current Age",
     encouragements: [
       { threshold: 0, emoji: "🌱", msg: "Seed planted! The journey begins!" },
       { threshold: 10, emoji: "🌿", msg: "Growing nicely~ Keep going!" },
@@ -141,13 +141,13 @@ const i18n = {
 };
 
 /* ─────────────── Currency ─────────────── */
-const currencies = {
+const currencies: Record<CurKey, CurrencyConfig> = {
   EUR: { symbol: "€", locale: "de-DE", code: "EUR", presets: [30000, 50000, 100000, 200000], maxGoal: 500000, maxMonthly: 5000, maxInvest: 3000, stepGoal: 1000 },
   KRW: { symbol: "₩", locale: "ko-KR", code: "KRW", presets: [30000000, 50000000, 100000000, 200000000], maxGoal: 500000000, maxMonthly: 5000000, maxInvest: 3000000, stepGoal: 1000000 },
 };
 
 /* ─────────────── Themes ─────────────── */
-const themes = {
+const themes: Record<ThemeKey, ThemeColors> = {
   light: {
     bg: "#FFF8F0", card: "#FFFFFF", text: "#2D3436", subtext: "#999",
     muted: "#aaa", border: "#F0F0F0", trackBg: "#F0F0F0",
@@ -164,15 +164,15 @@ const themes = {
   },
 };
 
-const A = {
+const A: Record<AccentKey, string> = {
   cash: "#FF6B9D", savings: "#00D2FF", stocks: "#FFD93D",
   goal: "#6C5CE7", green: "#55EFC4", pink: "#FD79A8", purple: "#A29BFE",
 };
 
 /* ─────────────── Simulator ─────────────── */
-function simulate({ cash, savings, stocks, monthlySaving, monthlyInvest, savingsRate, stockRate, target }) {
+function simulate({ cash, savings, stocks, monthlySaving, monthlyInvest, savingsRate, stockRate, target }: SimInput): SimResult {
   let c = cash, s = savings, st = stocks, months = 0;
-  const history = [{ month: 0, total: c + s + st, cash: c, savings: s, stocks: st }];
+  const history: HistoryPoint[] = [{ month: 0, total: c + s + st, cash: c, savings: s, stocks: st }];
   while (c + s + st < target && months < 600) {
     months++;
     s = s * (1 + savingsRate / 100 / 12) + monthlySaving;
@@ -183,7 +183,13 @@ function simulate({ cash, savings, stocks, monthlySaving, monthlyInvest, savings
 }
 
 /* ─────────────── Sub-Components ─────────────── */
-function SliderInput({ label, value, onChange, min, max, step, color, suffix = "", emoji, theme }) {
+interface SliderInputProps {
+  label: string; value: number; onChange: (v: number) => void;
+  min: number; max: number; step: number; color: string;
+  suffix?: string; emoji: string; theme: ThemeColors;
+}
+
+function SliderInput({ label, value, onChange, min, max, step, color, suffix = "", emoji, theme }: SliderInputProps) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
     <div style={{ marginBottom: 18 }}>
@@ -200,7 +206,7 @@ function SliderInput({ label, value, onChange, min, max, step, color, suffix = "
           background: `linear-gradient(90deg, ${color}88, ${color})`, transition: "width 0.15s",
         }} />
         <input type="range" min={min} max={max} step={step} value={value}
-          onChange={e => onChange(parseFloat(e.target.value))}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
           style={{
             position: "absolute", top: -6, left: 0, width: "100%", height: 20,
             appearance: "none", background: "transparent", cursor: "pointer", zIndex: 2,
@@ -210,7 +216,12 @@ function SliderInput({ label, value, onChange, min, max, step, color, suffix = "
   );
 }
 
-function NumberInput({ label, value, onChange, emoji, color, theme, symbol }) {
+interface NumberInputProps {
+  label: string; value: number; onChange: (v: number) => void;
+  emoji: string; color: string; theme: ThemeColors; symbol: string;
+}
+
+function NumberInput({ label, value, onChange, emoji, color, theme, symbol }: NumberInputProps) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: 14 }}>
@@ -219,7 +230,7 @@ function NumberInput({ label, value, onChange, emoji, color, theme, symbol }) {
       </label>
       <div style={{ position: "relative" }}>
         <input type="number" value={value}
-          onChange={e => onChange(parseFloat(e.target.value) || 0)}
+          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
             width: "100%", padding: "10px 50px 10px 14px", borderRadius: 14,
@@ -237,13 +248,18 @@ function NumberInput({ label, value, onChange, emoji, color, theme, symbol }) {
   );
 }
 
-function TogglePill({ options, value, onChange, theme }) {
+interface TogglePillProps {
+  options: { value: string; label: string }[];
+  value: string; onChange: (v: string) => void; theme: ThemeColors;
+}
+
+function TogglePill({ options, value, onChange, theme }: TogglePillProps) {
   return (
     <div style={{
       display: "inline-flex", borderRadius: 30, overflow: "hidden",
       border: `2px solid ${theme.border}`, background: theme.card,
     }}>
-      {options.map(o => (
+      {options.map((o) => (
         <button key={o.value} onClick={() => onChange(o.value)} style={{
           padding: "6px 16px", border: "none", cursor: "pointer",
           background: value === o.value ? A.goal : "transparent",
@@ -255,7 +271,12 @@ function TogglePill({ options, value, onChange, theme }) {
   );
 }
 
-const CustomTooltip = ({ active, payload, label, t, theme }) => {
+interface TooltipProps {
+  active?: boolean; payload?: Array<{ color: string; name: string; value: number }>;
+  label?: string; t: Translation; theme: ThemeColors;
+}
+
+const CustomTooltip = ({ active, payload, label, t, theme }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
@@ -276,8 +297,8 @@ const PIE_COLORS = [A.cash, A.savings, A.stocks];
 
 /* ─────────────── MAIN ─────────────── */
 export default function App() {
-  const [lang, setLang] = useState("ko");
-  const [cur, setCur] = useState("EUR");
+  const [lang, setLang] = useState<Lang>("ko");
+  const [cur, setCur] = useState<CurKey>("EUR");
   const [dark, setDark] = useState(false);
   const [cash, setCash] = useState(500);
   const [savings, setSavings] = useState(12751);
@@ -300,17 +321,17 @@ export default function App() {
   const cc = currencies[cur];
   const theme = themes[dark ? "dark" : "light"];
 
-  const fmt = useCallback((n) =>
+  const fmt = useCallback((n: number) =>
     new Intl.NumberFormat(cc.locale, { style: "currency", currency: cc.code, maximumFractionDigits: 0 }).format(n),
     [cc]);
 
-  const handleCurrencyChange = (newCur) => {
+  const handleCurrencyChange = (newCur: string) => {
     if (newCur === cur) return;
     const f = newCur === "KRW" ? 1500 : 1 / 1500;
     setCash(Math.round(cash * f)); setSavings(Math.round(savings * f));
     setStocks(Math.round(stocks * f)); setMonthlySaving(Math.round(monthlySaving * f));
     setMonthlyInvest(Math.round(monthlyInvest * f)); setTarget(Math.round(target * f));
-    setMonthlyExpense(Math.round(monthlyExpense * f)); setCur(newCur);
+    setMonthlyExpense(Math.round(monthlyExpense * f)); setCur(newCur as CurKey);
   };
 
   const totalNow = cash + savings + stocks;
@@ -330,7 +351,7 @@ export default function App() {
     { name: t.cashLabel, value: cash },
     { name: t.savingsLabel, value: savings },
     { name: t.stocksLabel, value: stocks },
-  ].filter(d => d.value > 0);
+  ].filter((d) => d.value > 0);
 
   const agg = useMemo(() => simulate({
     cash, savings: savings * 0.3, stocks: stocks + savings * 0.7,
@@ -352,9 +373,9 @@ export default function App() {
   useEffect(() => {
     if (progress >= 100 && !showConfetti) setShowConfetti(true);
     if (progress < 100) setShowConfetti(false);
-  }, [progress]);
+  }, [progress, showConfetti]);
 
-  const monthsToDate = (m) => {
+  const monthsToDate = (m: number) => {
     const d = new Date(); d.setMonth(d.getMonth() + m);
     return d.toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US", { year: "numeric", month: "long" });
   };
@@ -365,7 +386,7 @@ export default function App() {
     if (v > 0) { setTarget(v); setShowCustom(false); setCustomGoalInput(""); }
   };
 
-  const cStyle = (delay = 0) => ({
+  const cStyle = (delay = 0): React.CSSProperties => ({
     background: theme.card, borderRadius: 24, padding: 24,
     boxShadow: theme.cardShadow, transition: "all 0.4s cubic-bezier(.4,0,.2,1)",
     opacity: animReady ? 1 : 0, transform: animReady ? "translateY(0)" : "translateY(30px)",
@@ -389,7 +410,6 @@ export default function App() {
         @keyframes rainbowBorder{0%{border-color:${A.cash}}25%{border-color:${A.savings}}50%{border-color:${A.stocks}}75%{border-color:${A.goal}}100%{border-color:${A.cash}}}
         @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
         .hc:hover{transform:translateY(-4px)!important;box-shadow:${theme.cardHoverShadow}!important}
-        .hg:hover{transform:scale(1.05)!important}
         input[type="range"]::-webkit-slider-thumb{appearance:none;width:24px;height:24px;border-radius:50%;background:white;border:3px solid currentColor;box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.2s}
         input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.3)}
         input[type="number"]::-webkit-inner-spin-button{opacity:1}
@@ -418,7 +438,7 @@ export default function App() {
           }}>{t.title}</h1>
           <p style={{ fontSize: 14, color: theme.subtext, fontWeight: 600 }}>{t.subtitle}</p>
           <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 16, flexWrap: "wrap", animation: "slideR 0.5s ease-out 0.3s both" }}>
-            <TogglePill options={[{ value: "ko", label: "🇰🇷 한국어" }, { value: "en", label: "🇬🇧 English" }]} value={lang} onChange={setLang} theme={theme} />
+            <TogglePill options={[{ value: "ko", label: "🇰🇷 한국어" }, { value: "en", label: "🇬🇧 English" }]} value={lang} onChange={(v) => setLang(v as Lang)} theme={theme} />
             <TogglePill options={[{ value: "EUR", label: "€ EUR" }, { value: "KRW", label: "₩ KRW" }]} value={cur} onChange={handleCurrencyChange} theme={theme} />
             <button onClick={() => setDark(!dark)} style={{
               padding: "6px 16px", borderRadius: 30, border: `2px solid ${theme.border}`,
@@ -504,7 +524,7 @@ export default function App() {
                 min={cur === "KRW" ? 1000000 : 1000} max={cc.maxGoal} step={cc.stepGoal}
                 color={A.goal} suffix={cc.symbol} emoji="🏁" theme={theme} />
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
-                {cc.presets.map(g => (
+                {cc.presets.map((g) => (
                   <button key={g} className="pb" onClick={() => setTarget(g)} style={{
                     padding: "7px 16px", borderRadius: 20, border: "none",
                     background: target === g ? `linear-gradient(135deg, ${A.goal}, ${A.purple})` : theme.trackBg,
@@ -520,9 +540,9 @@ export default function App() {
               </div>
               {showCustom && (
                 <div style={{ marginTop: 12, display: "flex", gap: 8, animation: "popIn 0.3s ease-out" }}>
-                  <input type="number" value={customGoalInput} onChange={e => setCustomGoalInput(e.target.value)}
+                  <input type="number" value={customGoalInput} onChange={(e) => setCustomGoalInput(e.target.value)}
                     placeholder={cur === "KRW" ? "50000000" : "75000"}
-                    onKeyDown={e => e.key === "Enter" && applyCustomGoal()}
+                    onKeyDown={(e) => e.key === "Enter" && applyCustomGoal()}
                     style={{
                       flex: 1, padding: "8px 14px", borderRadius: 14,
                       border: `2px solid ${A.goal}44`, fontSize: 15, fontWeight: 700,
@@ -570,19 +590,25 @@ export default function App() {
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <defs>
-                    {["cash", "savings", "stocks"].map(k => (
-                      <linearGradient key={k} id={`g_${k}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={A[k]} stopOpacity={0.5} />
-                        <stop offset="100%" stopColor={A[k]} stopOpacity={0.03} />
-                      </linearGradient>
-                    ))}
+                    <linearGradient id="g_cash" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={A.cash} stopOpacity={0.5} />
+                      <stop offset="100%" stopColor={A.cash} stopOpacity={0.03} />
+                    </linearGradient>
+                    <linearGradient id="g_savings" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={A.savings} stopOpacity={0.5} />
+                      <stop offset="100%" stopColor={A.savings} stopOpacity={0.03} />
+                    </linearGradient>
+                    <linearGradient id="g_stocks" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={A.stocks} stopOpacity={0.5} />
+                      <stop offset="100%" stopColor={A.stocks} stopOpacity={0.03} />
+                    </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme.border} />
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: theme.muted, fontWeight: 600 }}
-                    tickFormatter={v => v === 0 ? t.now : `${v}m`}
+                    tickFormatter={(v: number) => v === 0 ? t.now : `${v}m`}
                     interval={Math.max(0, Math.floor(chartData.length / 6) - 1)} />
                   <YAxis tick={{ fontSize: 11, fill: theme.muted, fontWeight: 600 }}
-                    tickFormatter={v => cur === "KRW" ? `${(v / 10000).toFixed(0)}만` : `${(v / 1000).toFixed(0)}k`} />
+                    tickFormatter={(v: number) => cur === "KRW" ? `${(v / 10000).toFixed(0)}만` : `${(v / 1000).toFixed(0)}k`} />
                   <Tooltip content={<CustomTooltip t={t} theme={theme} />} />
                   <ReferenceLine y={target} stroke={A.goal} strokeDasharray="8 4" strokeWidth={2} label={{ value: "🎯 Goal", position: "right", fill: A.goal, fontSize: 11, fontWeight: 700 }} />
                   <Area type="monotone" dataKey="stocks" name={t.stocksLabel} stackId="1" stroke={A.stocks} fill="url(#g_stocks)" strokeWidth={2.5} animationDuration={1200} />
@@ -678,7 +704,7 @@ export default function App() {
               <div style={{ fontFamily: "'Baloo 2', cursive", fontSize: 20, fontWeight: 800, color: A.goal, marginBottom: 12 }}>{t.milestone}</div>
               {[0.25, 0.5, 0.75, 1.0].map((pct, idx) => {
                 const ms = target * pct;
-                const mData = history.find(h => h.total >= ms);
+                const mData = history.find((h) => h.total >= ms);
                 const reached = totalNow >= ms;
                 return (
                   <div key={pct} className="mr" style={{
