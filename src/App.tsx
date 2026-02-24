@@ -22,7 +22,7 @@ const T=(ko:boolean)=>({
   comp:ko?"🧩 자산 구성":"🧩 Asset Composition",
   mile:ko?"🗓 마일스톤 타임라인":"🗓 Milestone Timeline",
   tLeft:ko?"달성까지":"Time Left",tYear:ko?"예상 연도":"Target Year",mTotal:ko?"월 투입":"Monthly",vGoal:ko?"달성률":"Progress",
-  mo:ko?"개월":"mo",yr:ko?"년":"yr",after:ko?"후":"later",approx:ko?"약":"~",
+  mo:ko?"개월":"mo",yr:ko?"년":"yr",after:ko?"후":"later",approx:ko?"약":"~",mAfter:ko?"개월 후":" months later",
   achieved:ko?"달성!":"Done!",goalDone:ko?"달성! 🎉":"Done! 🎉",
   curAsset:ko?"현재 자산":"Current",remaining:ko?"목표까지":"Remaining",
   expDate:ko?"예상 달성일":"Expected",
@@ -192,21 +192,21 @@ export default function App(){
   const[lang,setLang]=useState<Lang>("ko");
   const[cur,setCur]=useState<CurKey>("EUR");
   const[dk,setDk]=useState(false);
-  const[cash,setCash]=useState(500);
-  const[sav,setSav]=useState(12751);
-  const[stk,setStk]=useState(7041);
-  const[mS,setMS]=useState(1300);
-  const[mI,setMI]=useState(120);
+  const[cash,setCash]=useState(0);
+  const[sav,setSav]=useState(0);
+  const[stk,setStk]=useState(0);
+  const[mS,setMS]=useState(0);
+  const[mI,setMI]=useState(0);
   const[sR,setSR]=useState(2.0);
   const[iR,setIR]=useState(7.0);
-  const[target,setTarget]=useState(30000);
+  const[target,setTarget]=useState(0);
   const[custG,setCustG]=useState("");
   const[showCust,setShowCust]=useState(false);
   const[celeb,setCeleb]=useState(false);
-  const[fInc,setFInc]=useState(3500);
-  const[fExp,setFExp]=useState(1500);
-  const[fSv,setFSv]=useState(1300);
-  const[fIv,setFIv]=useState(120);
+  const[fInc,setFInc]=useState(0);
+  const[fExp,setFExp]=useState(0);
+  const[fSv,setFSv]=useState(0);
+  const[fIv,setFIv]=useState(0);
   const[fSR,setFSR]=useState(2.0);
   const[fIR,setFIR]=useState(7.0);
   const[age,setAge]=useState(30);
@@ -216,7 +216,6 @@ export default function App(){
   const[exI,setExI]=useState(0);
   const[bR,setBR]=useState(0);
   const[anim,setAnim]=useState(false);
-  const[showHow,setShowHow]=useState(false);
   const[showDetail,setShowDetail]=useState(false);
 
   useEffect(()=>{setTimeout(()=>setAnim(true),100);},[]);
@@ -368,7 +367,7 @@ export default function App(){
                 <CartesianGrid strokeDasharray="3 3" stroke={th.bdr}/>
                 <XAxis dataKey="month" tick={{fontSize:11,fill:th.mut}} tickFormatter={(v:number)=>v===0?t.now:`${v}m`} interval={Math.max(0,Math.floor(cd.length/6)-1)}/>
                 <YAxis tick={{fontSize:11,fill:th.mut}} tickFormatter={(v:number)=>fs(v)}/>
-                <Tooltip content={<Tip sfx={t.monthsAfter} th={th}/>}/>
+                <Tooltip content={<Tip sfx={t.mAfter} th={th}/>}/>
                 <ReferenceLine y={target} stroke={C.goal} strokeDasharray="8 4" strokeWidth={1.5} label={{value:"🎯",position:"right",fontSize:14}}/>
                 <Area type="monotone" dataKey="stocks" name={t.stkL} stackId="1" stroke={C.stk} fill="url(#gi)" strokeWidth={2}/>
                 <Area type="monotone" dataKey="savings" name={t.savL} stackId="1" stroke={C.sav} fill="url(#gs)" strokeWidth={2}/>
@@ -411,7 +410,7 @@ export default function App(){
                 <CartesianGrid strokeDasharray="3 3" stroke={th.bdr}/>
                 <XAxis dataKey="year" tick={{fontSize:10,fill:th.mut}}/>
                 <YAxis tick={{fontSize:10,fill:th.mut}} tickFormatter={(v:number)=>fs(v)}/>
-                <Tooltip contentStyle={{background:th.tip,borderRadius:12,border:`1px solid ${th.bdr}`}} formatter={(v:number,n:string)=>[fmt(v),n==="dep"?t.depL:t.gainL]}/>
+                <Tooltip contentStyle={{background:th.tip,borderRadius:12,border:`1px solid ${th.bdr}`}} formatter={(v:number|undefined,n:string)=>[fmt(v??0),n==="dep"?t.depL:t.gainL]}/>
                 <Bar dataKey="dep" name="dep" stackId="a" fill={C.sav} radius={[0,0,0,0]}/>
                 <Bar dataKey="gain" name="gain" stackId="a" fill={C.stk} radius={[4,4,0,0]}/>
               </BarChart>
@@ -432,7 +431,7 @@ export default function App(){
 
           <div className="hc" style={{...cs(500),border:`1px solid ${C.goal}15`}}>
             <div style={{fontFamily:"'Baloo 2',cursive",fontSize:20,fontWeight:800,color:C.goal,marginBottom:12}}>{t.mile}</div>
-            {[0.25,0.5,0.75,1.0].map((pct,idx)=>{const ms=target*pct,mD=history.find(h=>h.total>=ms),reached=tot>=ms;
+            {[0.25,0.5,0.75,1.0].map((pct)=>{const ms=target*pct,mD=history.find(h=>h.total>=ms),reached=tot>=ms;
               return(<div key={pct} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",marginBottom:8,background:reached?`${C.grn}10`:th.card2,borderRadius:14,border:reached?`1.5px solid ${C.grn}44`:`1px solid ${th.bdr}`,transition:"all 0.3s"}}>
                 <div style={{fontSize:20}}>{reached?"✅":"⬜"}</div>
                 <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700}}>{fmt(ms)} ({(pct*100).toFixed(0)}%)</div><div style={{fontSize:11,color:th.mut}}>{reached?t.achieved:mD?`${t.approx} ${fmtDur(mD.month,ko)} ${t.after} (${m2d(mD.month)})`:ko?"100년+":"100yr+"}</div></div>
