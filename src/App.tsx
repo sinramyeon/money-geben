@@ -10,7 +10,7 @@ interface CC{symbol:string;locale:string;code:string;presets:number[];maxG:numbe
 interface HP{month:number;total:number;cash:number;savings:number;stocks:number;}
 
 const T=(ko:boolean)=>({
-  title:"Money Geben",sub:ko?"돈 모으는 재미, 여기서 시작 🚀":"Start your saving journey 🚀",
+  title:"돈아껴서 돈모으는법",sub:ko?"일하기 시러요":"Start your saving journey 🚀",
   curAssets:ko?"🏦 현재 자산":"🏦 Current Assets",
   cash:ko?"현금 (통장)":"Cash",sav:ko?"저축 (적금/예금)":"Savings",stk:ko?"투자 (ETF/주식)":"Investments",
   monthly:ko?"📆 월간 설정":"📆 Monthly Settings",
@@ -27,7 +27,7 @@ const T=(ko:boolean)=>({
   curAsset:ko?"현재 자산":"Current",remaining:ko?"목표까지":"Remaining",
   expDate:ko?"예상 달성일":"Expected",
   cashL:ko?"현금":"Cash",savL:ko?"저축":"Savings",stkL:ko?"투자":"Invest",
-  footer:"Made with 💜 · Money Geben",now:"Now",dark:ko?"다크모드":"Dark Mode",
+  footer:"Made with 💜 · AI",now:"Now",dark:ko?"다크모드":"Dark Mode",
   heroGoal:ko?"목표 금액":"Goal",heroAt:ko?"에 달성 예상":" expected",
   progress:ko?"진행률":"Progress",
   // What If
@@ -410,7 +410,7 @@ export default function App(){
                 <CartesianGrid strokeDasharray="3 3" stroke={th.bdr}/>
                 <XAxis dataKey="year" tick={{fontSize:10,fill:th.mut}}/>
                 <YAxis tick={{fontSize:10,fill:th.mut}} tickFormatter={(v:number)=>fs(v)}/>
-                <Tooltip contentStyle={{background:th.tip,borderRadius:12,border:`1px solid ${th.bdr}`}} formatter={(v:number|undefined,n:string)=>[fmt(v??0),n==="dep"?t.depL:t.gainL]}/>
+                <Tooltip contentStyle={{background:th.tip,borderRadius:12,border:`1px solid ${th.bdr}`}} formatter={(v:any,n:any)=>[fmt(v??0),n==="dep"?t.depL:t.gainL]}/>
                 <Bar dataKey="dep" name="dep" stackId="a" fill={C.sav} radius={[0,0,0,0]}/>
                 <Bar dataKey="gain" name="gain" stackId="a" fill={C.stk} radius={[4,4,0,0]}/>
               </BarChart>
