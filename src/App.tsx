@@ -10,7 +10,7 @@ interface CC{symbol:string;locale:string;code:string;presets:number[];maxG:numbe
 interface HP{month:number;total:number;cash:number;savings:number;stocks:number;}
 
 const T=(ko:boolean)=>({
-  title:"돈아껴서 돈모으는법",sub:ko?"일하기 시러요":"Start your saving journey 🚀",
+  title:"돈아껴서 돈모으는법",sub:ko?"일하기 시러요":"앞으로 돈 쓰고 싶을때마다 이 페이지 1분 보고 쓰자",
   curAssets:ko?"🏦 현재 자산":"🏦 Current Assets",
   cash:ko?"현금 (통장)":"Cash",sav:ko?"저축 (적금/예금)":"Savings",stk:ko?"투자 (ETF/주식)":"Investments",
   monthly:ko?"📆 월간 설정":"📆 Monthly Settings",
@@ -84,15 +84,15 @@ const T=(ko:boolean)=>({
   lasts:ko?"유지":"Lasts",safety:ko?"안전":"Safety",
   safe:ko?"안전":"Safe",risky:ko?"위험":"Risky",cur:ko?"현재":"Now",
   enc:[
-    {t:0,e:"🌱",m:ko?"씨앗을 심었어! 시작이 반!":"Seed planted!"},
-    {t:10,e:"🌿",m:ko?"자라나고 있어~":"Growing~"},
-    {t:25,e:"💪",m:ko?"1/4 왔다! 대단해!":"Quarter done!"},
-    {t:40,e:"🔥",m:ko?"불타오르는 중!":"On fire!"},
-    {t:50,e:"🎯",m:ko?"반 왔다!!":"Halfway!!"},
-    {t:60,e:"🚀",m:ko?"이제 가속!":"Accelerating!"},
-    {t:75,e:"⭐",m:ko?"거의 다 왔어!":"Almost!"},
-    {t:90,e:"🏆",m:ko?"코앞이야!!!":"So close!!!"},
-    {t:100,e:"🎉",m:ko?"목표 달성!! 🥳":"GOAL!! 🥳"},
+    {t:0,e:"🌱",m:ko?"이제 막 시작이다! 막 시작한거니까 힘내자":"Seed planted!"},
+    {t:10,e:"🌿",m:ko?"어느덧 1할 옴 1할타자임":"Growing~"},
+    {t:25,e:"💪",m:ko?"1/4 이나 이뤘음ㅁㅊ":"Quarter done!"},
+    {t:40,e:"🔥",m:ko?"좀만 더하면 반임":"On fire!"},
+    {t:50,e:"🎯",m:ko?"반이나 옴 이젠 걍 루틴이죠??":"Halfway!!"},
+    {t:60,e:"🚀",m:ko?"이제 좀있음 끝날듯?":"Accelerating!"},
+    {t:75,e:"⭐",m:ko?"이쯤되면 GG라고 할수있죠":"Almost!"},
+    {t:90,e:"🏆",m:ko?"다햇다 다햇다 걍 게임 끝이다 이거":"So close!!!"},
+    {t:100,e:"🎉",m:ko?"🥳🥳🥳🥳🥳🥳🥳🥳🥳🥳🥳🥳🥳🥳":"GOAL!! 🥳"},
   ],
 });
 
