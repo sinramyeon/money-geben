@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid, ReferenceLine, BarChart, Bar, Line
@@ -107,7 +107,7 @@ const thms:Record<string,TC>={
 const C={cash:"#E8836B",sav:"#5BA4CF",stk:"#D4A843",goal:"#7C6AC5",grn:"#5DB87D",pnk:"#C47DA0",prp:"#9B8EC4",org:"#D4734E",blu:"#4A8FBF"};
 
 function sim(c:number,s:number,st:number,ms:number,mi:number,sr:number,ir:number,tgt:number){
-  let _c=c,_s=s,_st=st,m=0;const h:HP[]=[{month:0,total:_c+_s+_st,cash:_c,savings:_s,stocks:_st}];
+  const _c=c;let _s=s,_st=st,m=0;const h:HP[]=[{month:0,total:_c+_s+_st,cash:_c,savings:_s,stocks:_st}];
   while(_c+_s+_st<tgt&&m<1200){m++;_s=_s*(1+sr/100/12)+ms;_st=_st*(1+ir/100/12)+mi;h.push({month:m,total:_c+_s+_st,cash:_c,savings:_s,stocks:_st});}
   return{months:m,history:h};}
 
@@ -135,8 +135,10 @@ function fmtDur(m:number,ko:boolean){
   if(mo===0)return`${y}${ko?"년":"yr"}`;
   return`${y}${ko?"년 ":"yr "}${mo}${ko?"개월":"mo"}`;}
 
+const CELEB_PARTICLES=Array.from({length:60}).map((_,i)=>({id:i,l:Math.random()*100,sz:8+Math.random()*14,dur:2.5+Math.random()*3,del:Math.random()*2.5,em:["🎉","🎊","✨","💰","🎯","⭐","💎","🏆"][i%8],xd:-30+Math.random()*60,rot:Math.random()*720-360}));
+
 function Celeb({on}:{on:boolean}){
-  const p=useMemo(()=>Array.from({length:60}).map((_,i)=>({id:i,l:Math.random()*100,sz:8+Math.random()*14,dur:2.5+Math.random()*3,del:Math.random()*2.5,em:["🎉","🎊","✨","💰","🎯","⭐","💎","🏆"][i%8],xd:-30+Math.random()*60,rot:Math.random()*720-360})),[]);
+  const p=CELEB_PARTICLES;
   if(!on)return null;
   return(<div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:9999,overflow:"hidden"}}>
     <div style={{position:"absolute",top:"35%",left:"50%",transform:"translateX(-50%)",fontSize:80,animation:"tBounce 1s cubic-bezier(.36,.07,.19,.97) 0.3s both"}}>🏆</div>
@@ -202,7 +204,6 @@ export default function App(){
   const[target,setTarget]=useState(0);
   const[custG,setCustG]=useState("");
   const[showCust,setShowCust]=useState(false);
-  const[celeb,setCeleb]=useState(false);
   const[fInc,setFInc]=useState(0);
   const[fExp,setFExp]=useState(0);
   const[fSv,setFSv]=useState(0);
@@ -244,11 +245,13 @@ export default function App(){
   const m2d=(m:number)=>{const d=new Date();d.setMonth(d.getMonth()+m);return d.toLocaleDateString(ko?"ko-KR":"en-US",{year:"numeric",month:"long"});};
   const durStr=fmtDur(months,ko);
 
-  const yearly=useMemo(()=>{const d:{year:number;total:number;dep:number;gain:number}[]=[];let s=sav,st=stk,c=cash;
+  const yearly=useMemo(()=>{const d:{year:number;total:number;dep:number;gain:number}[]=[];let s=sav,st=stk;const c=cash;
     for(let y=1;y<=10;y++){const prev=c+s+st;for(let m=0;m<12;m++){s=s*(1+sR/100/12)+mS;st=st*(1+iR/100/12)+mI;}
       const total=c+s+st;const dep=(mS+mI)*12;d.push({year:new Date().getFullYear()+y,total:Math.round(total),dep:Math.round(dep),gain:Math.round(Math.max(0,total-prev-dep))});}return d;},[cash,sav,stk,mS,mI,sR,iR]);
 
-  useEffect(()=>{if(prog>=100&&!celeb)setCeleb(true);if(prog<100)setCeleb(false);},[prog,celeb]);
+  const prevProg=useRef(prog);
+  useEffect(()=>{prevProg.current=prog;},[prog]);
+  const celeb=prog>=100;
   const applyCust=()=>{const v=parseFloat(custG.replace(/[^0-9.]/g,""));if(v>0){setTarget(v);setShowCust(false);setCustG("");}};
   const cs=(d=0):React.CSSProperties=>({background:th.card,borderRadius:20,padding:28,boxShadow:th.shd,transition:"all 0.4s cubic-bezier(.4,0,.2,1)",opacity:anim?1:0,transform:anim?"translateY(0)":"translateY(20px)",transitionDelay:`${d}ms`});
   const wiDiff=months-wiSim.months;const hasWI=exS>0||exI>0||bR>0;
@@ -261,7 +264,6 @@ export default function App(){
   return(
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Baloo+2:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}body{background:${th.bg};transition:background 0.5s}
         @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
         @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
@@ -328,7 +330,7 @@ export default function App(){
               {cc.presets.map(g=>(<button key={g} className="pb" onClick={()=>setTarget(g)} style={{padding:"8px 18px",borderRadius:12,border:"none",background:target===g?th.text:th.trk,color:target===g?th.card:th.sub,fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>{fmt(g)}</button>))}
               <button className="pb" onClick={()=>setShowCust(!showCust)} style={{padding:"8px 18px",borderRadius:12,border:`1.5px dashed ${C.goal}44`,background:"transparent",color:C.goal,fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>✏️ {t.custom}</button>
             </div>
-            {showCust&&(<div style={{marginTop:12,display:"flex",gap:8}}><input type="number" value={custG} onChange={e=>setCustG(e.target.value)} placeholder={cur==="KRW"?"50000000":"75000"} onKeyDown={e=>e.key==="Enter"&&applyCust()} style={{flex:1,padding:"10px 16px",borderRadius:12,border:`1.5px solid ${C.goal}44`,fontSize:15,fontWeight:600,color:th.text,background:th.card,outline:"none",fontFamily:"inherit"}}/><button onClick={applyCust} style={{padding:"10px 22px",borderRadius:12,border:"none",background:th.text,color:th.card,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✓</button></div>)}
+            {showCust&&(<div style={{marginTop:12,display:"flex",gap:8}}><input type="text" inputMode="numeric" value={custG} onChange={e=>setCustG(e.target.value)} placeholder={cur==="KRW"?"50000000":"75000"} onKeyDown={e=>e.key==="Enter"&&applyCust()} style={{flex:1,padding:"10px 16px",borderRadius:12,border:`1.5px solid ${C.goal}44`,fontSize:15,fontWeight:600,color:th.text,background:th.card,outline:"none",fontFamily:"inherit"}}/><button onClick={applyCust} style={{padding:"10px 22px",borderRadius:12,border:"none",background:th.text,color:th.card,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✓</button></div>)}
           </div>
 
           <div className="g2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
@@ -410,7 +412,7 @@ export default function App(){
                 <CartesianGrid strokeDasharray="3 3" stroke={th.bdr}/>
                 <XAxis dataKey="year" tick={{fontSize:10,fill:th.mut}}/>
                 <YAxis tick={{fontSize:10,fill:th.mut}} tickFormatter={(v:number)=>fs(v)}/>
-                <Tooltip contentStyle={{background:th.tip,borderRadius:12,border:`1px solid ${th.bdr}`}} formatter={(v:any,n:any)=>[fmt(v??0),n==="dep"?t.depL:t.gainL]}/>
+                <Tooltip contentStyle={{background:th.tip,borderRadius:12,border:`1px solid ${th.bdr}`}} formatter={(v, n)=>[fmt(Number(v ?? 0)),n==="dep"?t.depL:t.gainL]}/>
                 <Bar dataKey="dep" name="dep" stackId="a" fill={C.sav} radius={[0,0,0,0]}/>
                 <Bar dataKey="gain" name="gain" stackId="a" fill={C.stk} radius={[4,4,0,0]}/>
               </BarChart>
